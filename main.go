@@ -2,25 +2,21 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 
-	"database/sql"
-
-	"github.com/Aadithya-V/mqimgstore/handlers"
+	"github.com/Aadithya-V/mqimgstore/database"
+	"github.com/Aadithya-V/mqimgstore/queue"
+	"github.com/Aadithya-V/mqimgstore/server"
 	"github.com/gin-gonic/gin"
-	"github.com/go-sql-driver/mysql"
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // Constants specifying the listening addresses of
 // the MySQL server and the gin router engine.
 var (
 	ListenAddr = "localhost:8080"
-	MySQLAddr  = "127.0.0.1:3306"
 )
 
 /* type closable interface {
@@ -33,29 +29,17 @@ var closeCh = make(chan closable, 64) // Large value to prevent enqueue deadlock
 func main() {
 
 	// Initialize database connection
-	db := initSqlDB()
+	db := database.NewMySQLSession()
 
-	// Connect to RabbitMq
-	mqConn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-	failOnError(err, "Failed to connect to RabbitMQ") // MUST PANIC?  -- restarts pod ;
-	defer mqConn.Close()
+	// Connect to RabbitMQ
+	msgB := queue.NewMessageBroker()
+	defer msgB.Close()
 
 	// Initialize router gin engine
-	router := initRouter(db, mqConn)
+	router := server.NewServer(db, msgB)
 
 	startHttpServer(router) // blocking. Spin this off into a go routine if subsequent code is added.
 
-}
-
-// Function initRouter() initialises a router,
-// maps the routes and returns a pointer to it
-// which is *gin.Engine
-func initRouter(db *sql.DB, mqConn *amqp.Connection) *gin.Engine {
-	router := gin.Default()
-
-	router.POST("/product", handlers.AddProduct(db, mqConn))
-
-	return router
 }
 
 func startHttpServer(router *gin.Engine) {
@@ -87,28 +71,4 @@ func startHttpServer(router *gin.Engine) {
 	}
 
 	<-idleConnsClosed
-}
-
-func initSqlDB() *sql.DB {
-	// Capture connection properties.
-	cfg := mysql.Config{
-		User:   "go",  //os.Getenv("DBUSER"),
-		Passwd: "123", //os.Getenv("DBPASS"),
-		Net:    "tcp",
-		Addr:   MySQLAddr,
-		DBName: "test",
-	}
-	// Get a database handle.
-	db, err := sql.Open("mysql", cfg.FormatDSN())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	pingErr := db.Ping()
-	if pingErr != nil {
-		log.Fatal(pingErr)
-	}
-	fmt.Println("MySQL Connected!")
-
-	return db
 }

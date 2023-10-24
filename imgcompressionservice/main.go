@@ -30,7 +30,7 @@ func main() {
 
 	// Should be CONSISTENT WITH PRODUCER!!
 	q, err := ch.QueueDeclare(
-		"imgcompressionservice", // name
+		"img-compression-queue", // name
 		true,                    // durable
 		false,                   // delete when unused
 		false,                   // exclusive

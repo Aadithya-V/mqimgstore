@@ -1,16 +1,14 @@
-package user
+package users
 
 import (
 	"database/sql"
 	"fmt"
-
-	"github.com/Aadithya-V/mqimgstore/models"
 )
 
 // userByID queries for the user with the specified ID.
-func userByID(id int, db *sql.DB) (models.User, error) {
+func userByID(id int64, db *sql.DB) (User, error) {
 	// A models.User to hold data from the returned row.
-	var user models.User
+	var user User
 
 	row := db.QueryRow("SELECT * FROM users WHERE user_id = ? ", id)
 	if err := row.Scan(&user.ID, &user.Name, &user.Mobile, &user.Latitude, &user.Longitude, &user.CreatedAt, &user.UpdatedAt); err != nil {

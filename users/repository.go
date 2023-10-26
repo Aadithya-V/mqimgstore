@@ -1,9 +1,7 @@
-package user
+package users
 
 import (
 	"database/sql"
-
-	"github.com/Aadithya-V/mqimgstore/models"
 )
 
 type Respository struct {
@@ -14,6 +12,6 @@ func NewRepository(db *sql.DB) *Respository {
 	return &Respository{db}
 }
 
-func (r *Respository) GetUserByID(id int) (models.User, error) {
+func (r *Respository) GetUserByID(id int64) (User, error) {
 	return userByID(id, r.db)
 }

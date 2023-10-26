@@ -1,8 +1,8 @@
-package user
+package users
 
 // struct user represents data of user.
 type User struct {
-	ID          string  `json:"id"`
+	ID          int64   `json:"id"`
 	Name        string  `json:"name" binding:"required"`
 	Mobile      string  `json:"mobile" binding:"required,e164"`
 	Latitude    float64 `json:"latitude" binding:"required"`

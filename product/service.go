@@ -6,25 +6,32 @@ import (
 	"log"
 	"time"
 
-	"github.com/Aadithya-V/mqimgstore/models"
 	"github.com/Aadithya-V/mqimgstore/queue"
+	"github.com/Aadithya-V/mqimgstore/users"
 )
 
+//go:generate mockery --name IProductRepository
 type IProductRepository interface {
 	InsertProduct(addProduct AddableProduct) (int64, error)
 }
 
+//go:generate mockery --name IUserRepository
 type IUserRepository interface {
-	GetUserByID(id int) (models.User, error)
+	GetUserByID(id int64) (users.User, error)
+}
+
+//go:generate mockery --name IMsgB
+type IMsgB interface {
+	Publish(ctx context.Context, queueName string, body []byte) error
 }
 
 type Service struct {
 	pRepo IProductRepository
 	uRepo IUserRepository
-	msgB  *queue.MessageBroker
+	msgB  IMsgB
 }
 
-func NewService(pRepo IProductRepository, uRepo IUserRepository, msgB *queue.MessageBroker) *Service {
+func NewService(pRepo IProductRepository, uRepo IUserRepository, msgB IMsgB) *Service {
 	return &Service{pRepo, uRepo, msgB}
 }
 
